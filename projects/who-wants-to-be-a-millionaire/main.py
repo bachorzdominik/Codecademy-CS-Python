@@ -2,6 +2,7 @@ import requests
 import json
 import sys
 import random
+import html
 
 
 class Questions:
@@ -13,6 +14,7 @@ class Questions:
             'category': category
         }
         self.categories = self.get_categories()
+        self.raw_data = self.raw_data()
 
     def raw_request(self):
         result = requests.get('https://opentdb.com/api.php', params=self.parameters)
@@ -39,19 +41,24 @@ class Questions:
             print(f"{i['id']}. {i['name']}")
         category = int(input('Enter the category number: '))
         self.parameters['category'] = category
-        
-    def shuffle_questions(self):
-        pass
 
     def create_question_set(self):
-        pass
+        q_and_a_set_collection = []
+        for data in self.raw_data:
+            q_and_a_set = {}
+            answers = data['incorrect_answers']
+            correct_answer = data['correct_answer']
 
+            answers.insert(random.randint(0, len(answers)), correct_answer)
+            
+            q_and_a_set['question'] = html.unescape(data['question']),
+            q_and_a_set['answers'] = [html.unescape(answer) for answer in answers],
+            q_and_a_set['correct_answer'] = html.unescape(data['correct_answer'])
 
-easy_questions = Questions(category=None)
-easy_questions.choose_category()
-questions = easy_questions.raw_data()
-for i in questions:
-    print(i['question'])
-    print(i['correct_answer'])
-    print(i['incorrect_answers'])
-    print()
+            q_and_a_set_collection.append(q_and_a_set)
+
+        return q_and_a_set_collection
+
+easy_questions = Questions(category=18)
+for q in easy_questions.create_question_set():
+    print(q)
